@@ -1,0 +1,25 @@
+#title_area {
+
+}
+
+#text_area {
+    color: blue;
+}
+
+#button_panel {
+    color: green;
+}
+
+#svg_canvas {
+    color: brown;
+}
+
+svg {
+    float:left
+}
+
+.selectedButton {
+    opacity: .8;
+    color: black;
+    background-color: green;
+}
