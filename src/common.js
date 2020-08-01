@@ -138,6 +138,8 @@ function firstSlideBuilder() {
         .enter()
         .append('rect')
             .on('mouseover', function(d, i) {
+                var toolTipHtml = 'Number of movies uploaded in ' + d.year + '<br>'
+                toolTipHtml += d.count
                 d3.select(this)
                     .style('opacity', 0.8)
                     .attr('fill', "#1CCAD8");
@@ -148,7 +150,9 @@ function firstSlideBuilder() {
                     .style('position', 'absolute')
                     .style('text-align', 'center')
                     .style('background', 'white')
-                    .html(d.year)
+                    .html(
+                        toolTipHtml
+                    )
             })
             .on('mouseout', function(d) {
                 d3.select(this)
@@ -167,6 +171,20 @@ function firstSlideBuilder() {
             })
             .attr("fill", "#587291")
     
+    // X-axis label
+    svgCanvas.append("text")
+        .attr("y", (svgHeight - padAxisBottom))
+        .attr("x", (svgWidth / 2 ) - padAxisLeft)
+        .text("Year Added to Netflix")
+        .attr('dy', '12px');
+
+    // Y-axis label
+    svgCanvas.append("text")
+        .attr("y", 12)
+        .attr("x", -svgHeight/2)
+        .attr("transform", "rotate(-90)")
+        .text("Number of Movies");
+
     plotCanvas.transition()
         .attr('y', (d) => {
             return svgHeight - yScale(d.count);
@@ -180,6 +198,23 @@ function firstSlideBuilder() {
     // TODO: ADD ANNOTATIONS
     // TODO: [POPULATE TOOLTIPS WITH WHAT THEY REALLY SHOULD BE]
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Populate info needed for slide 2
 function buildCategoryList(data) {
