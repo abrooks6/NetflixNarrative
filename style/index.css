@@ -4,22 +4,39 @@
 
 #text_area {
     color: blue;
+    width: 80%;
+    display: block;
+    text-align: center; 
+    margin: auto;
 }
 
-#button_panel {
-    color: green;
+
+#svg_container {
+    display: block;
+    text-align: center;
+    margin: auto; 
+
 }
 
 #svg_canvas {
-    color: brown;
+    display: block;
+    text-align: center;   
+    margin: auto; 
+    color: black;
 }
 
-svg {
-    float:left
+#button_panel {
+    display: block;
+    text-align: center; 
+    margin: auto;
+}
+
+.gridline {
+    opacity: .3;
 }
 
 .selectedButton {
     opacity: .8;
     color: black;
-    background-color: green;
+    background-color: rgb(112, 166, 187);
 }
