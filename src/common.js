@@ -191,6 +191,7 @@ function firstSlideBuilder() {
                     .style('border-style', 'solid')
                     .style('border-width', '1px')
                     .style('padding', '1px')
+                    .style('pointer-events', 'none')
                     .html(toolTipHtml)
             })
             .on('mouseout', function(d) {
@@ -227,13 +228,16 @@ function drawFirstSlideAnnotations() {
         { 'text': 'Exceed Combined Total', 'x': 430, 'y': 95 },
         { 'text': 'of Cable Subscribers', 'x': 435, 'y': 115 },
         { 'text': 'Netflix Movie Data from 2009 through January 2020', 'x': 60, 'y': 40 }
-    ]
+    ];
     const lineConfigs = [
         { 'x1': 132, 'x2': 132, 'y1': 430, 'y2': 450 },
         { 'x1': 294, 'x2': 294, 'y1': 430, 'y2': 450 },
         { 'x1': 510, 'x2': 510, 'y1': 120, 'y2': 450 }
-    ]
-    
+    ];
+    plotAnnotations(annotationConfigs, lineConfigs);
+}
+
+function plotAnnotations(annotationConfigs, lineConfigs) {
     const svgCanvas = d3.select('#svg_canvas');
     svgCanvas.selectAll('plotviz')  
         .data(annotationConfigs)
@@ -262,9 +266,8 @@ function drawFirstSlideAnnotations() {
             .attr('x2', (d) => {return d.x2;})
             .attr('y1', (d) => {return d.y1;})
             .attr('y2', (d) => {return d.y2;});
-
-
 }
+
 
 function addPlotTransition(plotCanvas, yScale) {
     plotCanvas.transition()
@@ -324,13 +327,6 @@ function buildMovieRatingLists(data) {
 }
 
 // Slide 2 - Build something very similar to slide 1, but add a second axis and ratings line
-// TODO: Annotations
-// TODO: Fix colors
-// TODO: Change tick colors on line plot side & make that match the line color
-// Could benefit from...
-// - Adding zooming, especially on the second graph after toggle
-// - Fixing the axes
-// - Adding the text / analysis
 function secondSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide2Subtitle);
@@ -341,15 +337,16 @@ function secondSlideBuilder() {
         buildLineGraph(svgCanvas, xScale, rightYAxisScale, barMargin);
         buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin);
     };
-
     const svgCanvas = buildDefaultGraphSecondSlide(noScatterPlotFunc);
     addRightSvgAxis(svgCanvas, 'Average IMDB Movie Rating');
     const toggleDiv = document.getElementById('interactive_components');
     const toggler = document.createElement('button');
     const togglerTexts = [
-        'Show individual movie ratings',
-        'Show average movie ratings only'
+        'Show Individual Movie Ratings',
+        'Show Average Movie Ratings Only'
     ]
+    drawInitialSecondSlideAnnotations();
+
     // By default, build something graph from part 1 with an extra axis and different tooltips
     // If the toggle button is selected, expand the graph to show individual movies, grouped by
     // year and ratings.
@@ -359,13 +356,38 @@ function secondSlideBuilder() {
         if(toggler.innerText === togglerTexts[0]){
             toggler.innerText = togglerTexts[1];
             buildDefaultGraphSecondSlide(scatterPlotFunc);
+            drawScatteredSecondSlideAnnotations();
             addRightSvgAxis(svgCanvas, 'IMDB Movie Rating');
         } else {
             toggler.innerText = togglerTexts[0];
             buildDefaultGraphSecondSlide(noScatterPlotFunc);
+            drawInitialSecondSlideAnnotations();
             addRightSvgAxis(svgCanvas, 'Average IMDB Movie Rating');
         }
     }
+}
+
+
+function drawInitialSecondSlideAnnotations() {
+    const annotationConfigs = [
+        { 'text': 'Average IMDB Rating', 'x': 200, 'y': 55 },
+        { 'text': 'of Movies Uploaded', 'x': 202, 'y': 75 },
+        { 'text': 'to Netflix per Year', 'x': 210, 'y': 95 }
+    ];
+    const lineConfigs = [
+        { 'x1': 265, 'x2': 265, 'y1': 100, 'y2': 150 },
+    ]; 
+    plotAnnotations(annotationConfigs, lineConfigs);
+}
+
+function drawScatteredSecondSlideAnnotations() {
+    const annotationConfigs = [
+        { 'text': 'Each Orange Point Represents a Movie!', 'x': 60, 'y': 35 },
+        { 'text': 'Hover over One to see Information About it.', 'x': 60, 'y': 55 },
+    ];
+    const lineConfigs = [
+    ]; 
+    plotAnnotations(annotationConfigs, lineConfigs);
 }
 
 function buildDefaultGraphSecondSlide(plotFunc) {
@@ -433,14 +455,13 @@ function buildDefaultGraphSecondSlide(plotFunc) {
                     .style('border-style', 'solid')
                     .style('border-width', '1px')
                     .style('padding', '1px')
-                    .html(
-                        toolTipHtml
-                    )
+                    .style('pointer-events', 'none')
+                    .html(toolTipHtml)
             })
             .on('mouseout', function(d) {
                 d3.select(this)
                     .style('opacity', 1)
-                    .attr('fill', "#199911");
+                    .attr('fill', "#587291");
                 d3.select('#tooltip')
                     .style("opacity", 0)
             })
@@ -452,12 +473,11 @@ function buildDefaultGraphSecondSlide(plotFunc) {
             .attr('height', (d) => {
                 return leftYScale(d.count) - padAxisTop;
             })
-            .attr("fill", "#589991")
+            .attr("fill", "#587291")
 
     plotFunc(svgCanvas, xScale, rightYAxisScale, barMargin);
     addDefaultSvgAxes(svgCanvas, 'Year Added to Netflix', 'Number of Movies');
     return svgCanvas;
-
 }
 
 function addRightSvgAxis(svgCanvas, axisText) {
@@ -480,7 +500,8 @@ function buildLineGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
             return halfBarSize+xScale(d.year);
         })
         .attr('cy', (d) => {return rightYAxisScale(d.averating);})
-        .attr('r', 5);
+        .attr('r', 5)
+        .style('pointer-events', 'none');
 
     var line = d3.line()
         .x((d) => { 
@@ -493,8 +514,16 @@ function buildLineGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
         .datum(averageMovieRatingsByYear)
         .attr("d", line)
         .attr("stroke", "black")
-        .attr("fill", "none");
+        .attr("fill", "none")
+        .style('pointer-events', 'none');
 }
+
+function hideAnnotations() {
+    Object.values(document.getElementsByClassName("annotation")).forEach((elem) => {
+        elem.style.display = "none"
+    });
+}
+
 
 // Invidual movies - not just averages
 function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
@@ -503,6 +532,7 @@ function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
         .enter()
         .append('circle')
         .on('mouseover', function(d, i) {
+            hideAnnotations();
             var toolTipHtml = 'Title: ' + d['Netflix Title'] + '<br>';
             toolTipHtml += 'IMDB Rating: ' + d['IMDB Rating'] + '<br>'
             toolTipHtml += 'Number of votes on IMDB: ' + d['Vote Count'] +'<br>'
@@ -521,6 +551,7 @@ function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
                 .style('border-style', 'solid')
                 .style('border-width', '1px')
                 .style('padding', '1px')
+                .style('pointer-events', 'none')
                 .html(toolTipHtml)
         })
         .on('mouseout', function(d) {
@@ -528,7 +559,7 @@ function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
                 .style('opacity', 1)
             d3.select('#tooltip')
                 .style("opacity", 0)
-        })        
+        })
         .attr('cx', (d) => {
             var halfBarSize = (xScale.bandwidth() - barMargin) / 2;
             return halfBarSize+xScale(d['Year Added']);
@@ -536,7 +567,8 @@ function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
         .attr('cy', (d) => {
             return rightYAxisScale(d['IMDB Rating']);
         })
-        .attr('r', 3);
+        .attr('r', 3)
+        .attr('fill', 'orange');
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -798,9 +830,8 @@ function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
                     .style('border-style', 'solid')
                     .style('border-width', '1px')
                     .style('padding', '1px')
-                    .html(
-                        toolTipHtml
-                    )
+                    .style('pointer-events', 'none')
+                    .html(toolTipHtml)
             })
             .on('mouseout', function(d) {
                 d3.select('#tooltip')
@@ -904,6 +935,7 @@ function buildAlternateGraphThirdSlide() {
                     .style('border-style', 'solid')
                     .style('border-width', '1px')
                     .style('padding', '1px')
+                    .style('pointer-events', 'none')
                     .html(toolTipHtml)
 
             })
