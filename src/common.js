@@ -119,14 +119,14 @@ function updateSubtitleText(newText) {
     document.getElementById("sub_title").innerText = newText;
 }
 
-function updateDescriptionText(newText) {
-    document.getElementById("text_area").innerText = newText;
+function updateDescriptionHtml(newHtml) {
+    document.getElementById("text_area").innerHTML = newHtml;
 }
 
 function firstSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide1Subtitle);
-    updateDescriptionText(slide1Description);
+    updateDescriptionHtml(slide1Description);
     // Create scales for the x axis (year) & y axis (number of released movies)
     const xScale = d3.scaleBand()
          .domain(d3.range(minYear, maxYear+1))
@@ -277,7 +277,7 @@ function buildMovieRatingLists(data) {
 function secondSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide2Subtitle);
-    updateDescriptionText(slide2Description);
+    updateDescriptionHtml(slide2Description);
 
     const noScatterPlotFunc = buildLineGraph;
     const scatterPlotFunc = (svgCanvas, xScale, rightYAxisScale, barMargin) => {
@@ -632,7 +632,7 @@ function thirdSlideBuilder() {
     resetGraphicsCanvas();
     initializeUnfiltedCategoryStackFilter();
     updateSubtitleText(slide3Subtitle);
-    updateDescriptionText(slide3Description);
+    updateDescriptionHtml(slide3Description);
     const toggleDiv = document.getElementById('interactive_components');
     const toggler = document.createElement('button');
     const togglerTexts = [
@@ -724,7 +724,13 @@ function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
         .append('rect')
             .on('mouseover', function(d, i) {
                 var toolTipHtml = 'Number of Movies Uploaded in ' + d.year + ': ' + d.count + '<br>'
-                toolTipHtml += 'Number of Uploaded ' + focusCategory + ' Movies: ' + focusData[i].count;
+                var focusCount = 0;
+                focusData.forEach((focusData) => {
+                    if(focusData.year === d.year) {
+                        focusCount = focusData.count;
+                    }
+                });
+                toolTipHtml += 'Number of Uploaded ' + focusCategory + ' Movies: ' + focusCount;
                 d3.select('#tooltip')
                     .style('opacity', 1)
                     .style('left',(d3.event.pageX+5)+'px')
@@ -896,7 +902,7 @@ function buildIntroSlide() {
     const buttonDiv = document.getElementById('button_panel');
     const startButton = document.createElement('button');
     startButton.innerText = introButtonText;
-    updateDescriptionText(introSlideText);
+    updateDescriptionHtml(introSlideText);
     startButton.onclick = () => {
         buttonDiv.innerHTML = '';
         dynamicallyPopulateButtons();
