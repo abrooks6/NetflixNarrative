@@ -367,7 +367,6 @@ function secondSlideBuilder() {
     }
 }
 
-
 function drawInitialSecondSlideAnnotations() {
     const annotationConfigs = [
         { 'text': 'Average IMDB Rating', 'x': 200, 'y': 55 },
@@ -728,7 +727,7 @@ function thirdSlideBuilder() {
         'Show Movie Counts for Top Ten Netflix Categories',
         'Explore Invidual Netflix Categories By Year Added'
     ];
-
+    drawInitialThirdSlideAnnotations();
     toggler.innerText = togglerTexts[0];
     toggleDiv.append(toggler);
     toggler.onclick = () => {
@@ -736,15 +735,39 @@ function thirdSlideBuilder() {
             clearUpdateMenu();
             toggler.innerText = togglerTexts[1];
             buildAlternateGraphThirdSlide();
+            drawAlternateThirdSlideAnnotations()            
         } else {
             initializeUnfiltedCategoryStackFilter();
             toggler.innerText = togglerTexts[0];
+            drawInitialThirdSlideAnnotations();
         }
     }
 
 }
 
 
+function drawInitialThirdSlideAnnotations() {
+    const annotationConfigs = [
+        { 'text': 'Select a Movie Category to See How Much of the Total Content It Makes Up', 'x': 60, 'y': 40 },
+    ];
+    const lineConfigs = [
+        { 'x1': 530, 'x2': 800, 'y1': 36, 'y2': 36 },
+    ]; 
+    plotAnnotations(annotationConfigs, lineConfigs);
+}
+
+function drawAlternateThirdSlideAnnotations() {
+    const annotationConfigs = [
+        { 'text': 'Less Popular Genres', 'x': 480, 'y': 40 },
+        { 'text': 'Binned Into "Misc";', 'x': 480, 'y': 60 },
+        { 'text': 'Hover to See', 'x': 485, 'y': 80 },
+        { 'text': 'Contents', 'x': 510, 'y': 100 },
+    ];
+    const lineConfigs = [
+        { 'x1': 540, 'x2': 540, 'y1': 105, 'y2': 198 },
+    ]; 
+    plotAnnotations(annotationConfigs, lineConfigs);
+}
 
 
 // Slide 3 - interactive slide config and visualization
@@ -921,6 +944,7 @@ function buildAlternateGraphThirdSlide() {
                     miscCategories.forEach((miscCat) => {
                         toolTipHtml += '- ' + miscCat.category + ' (count: ' + miscCat.count + ')<br>'
                     })
+                    hideAnnotations();
                 }
 
                 d3.select(this)
