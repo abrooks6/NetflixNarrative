@@ -1,4 +1,4 @@
-#text_area {
+.text_area {
     color: black;
     width: 80%;
     display: block;
@@ -14,6 +14,7 @@
 
 #svg_canvas {
     display: inline-block;
+    position: relative;
     text-align: center;   
     margin: auto; 
     color: black;

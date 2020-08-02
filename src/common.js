@@ -49,31 +49,31 @@ var introSlideText =
 + 'Lastly, we dig into the diversity of the content uploaded to Netflix.'
 + ' We show a breakdown of the most prevalent movie genres on the platform and illustrate how frequently new content is uploaded per genre.<br><br>'
 
-var slide1Description = 'Netflix has long been known for offering a wide variety of movies on their streaming service.'
+const slide1UpperHtml = 'Netflix has long been known for offering a wide variety of movies on their streaming service.'
 + ' In recent years, many companies like Disney, Amazon, and Hulu have entered the streaming space as competitors.'
-+ ' In order to stay ahead, streaming platforms must offer high-quality new content regularly.<br><br>'
-+ ' From a quantity perspective, Netflix has done an excellent job of adding a high volume of movies and expanding its platform to over 190 countries.'
++ ' In order to stay ahead, streaming platforms must offer high-quality new content regularly.'
+
+const slide1LowerHtml =' From a quantity perspective, Netflix has done an excellent job of adding a high volume of movies and expanding its platform to over 190 countries.'
 + ' It is important note that the data portrayed in the visualization below shows the movies uploaded to Netflix as of mid-January, 2020.'
-+ ' That is, the movie uploads have not slowed down - the provided dataset is just a bit stale.'
++ ' That is, the movie uploads have not slowed down - the provided dataset is just a bit stale.<br><br>'
 
-
-const slide2Description = 'Customers of streaming services often seem to complain that the platforms lack high quality content.'
-+ ' The figure above illustrates the IMDB ratings of movies uploaded to the platform over the years.'
+const slide2UpperHtml = 'Customers of streaming services often seem to complain that the platforms lack high quality content.'
++ ' The figure below illustrates the IMDB ratings of movies uploaded to the platform over the years.'
 + ' The quality of the content seems to have stabilized over the last several years, which appears to be somewhat close to the expected average IMDB movie rating, '
-+ 'based on a ' + '<a href="http://www.njohnston.ca/2009/10/imdb-movie-ratings-over-the-years/">2009 study.</a><br><br>'
++ 'based on a ' + '<a href="http://www.njohnston.ca/2009/10/imdb-movie-ratings-over-the-years/">2009 study.</a>'
 
-+ 'In this way, we see that while the movie quality on Netflix is not spectacularly above average, it isn\'t as poor as some jaded users might expect.'
+const slide2LowerHtml = 'By inspecting the figure, we see that while the movie quality on Netflix is not spectacularly above average, it isn\'t as poor as some jaded users might expect.'
 + ' Digging into individual movie ratings using the graph above, we find that the platform has many renowned movies, such as <i>Pulp Fiction</i>, <i>The Matrix</i>, and <i>Inception.</i>'
 + ' There also seems to be consistent quality uploads throughout the years.'
 + ' As such, we believe that the movie content uploaded to Netflix is high enough to warrant praise, even if many bad movies are uploaded every year.'
 
-const slide3Description = 'In the first slide, we saw some useful annotations focused on the growth of Netflix as a streaming platform.'
+const slide3UpperHtml = 'In the first slide, we saw some useful annotations focused on the growth of Netflix as a streaming platform.'
 + ' With such a large subscriber base one might rightfully expect that Netflix boasts a large selection for a wide variety of movie genres.'
 + ' However, it may come as a surprise that the category with the largest selection on the Netflix platform is International films.'
 + ' In fact, According to ' + '<a href="https://www.statista.com/statistics/483112/netflix-subscribers/">Statista</a>'+', less than half of Netflix subscribers are from the United States.'
-+ ' Given that Netflix also provides subtitles in a variety of languages, this makes the platform especially valuable to those interested in learning new languages on their own.<br><br>'
++ ' Given that Netflix also provides subtitles in a variety of languages, this makes the platform especially valuable to those interested in learning new languages on their own.'
 
-+ 'Interacting with the plot above reveals that Netflix also has excellent selections for other common movie categories such as Drama, Comedy, and Action, providing support for the opinion that the platform is very well-rounded.'
+const slide3LowerHtml = 'Interacting with the plot above reveals that Netflix also has excellent selections for other common movie categories such as Drama, Comedy, and Action, providing support for the opinion that the platform is very well-rounded.'
 + ' While customers may have differing thoughts on whether or not Netflix is worth the price compared to emerging competitors, it is clear that the service does a good job of providing up to date, reasonable quality movies for a wide variety of genres.'
 const introButtonText = 'Start the Slideshow!'
 const slide1Subtitle = 'How Often Does Netflix Add New Movies?'
@@ -128,14 +128,21 @@ function updateSubtitleText(newText) {
     document.getElementById("sub_title").innerText = newText;
 }
 
-function updateDescriptionHtml(newHtml) {
-    document.getElementById("text_area").innerHTML = newHtml;
+function updateLowerTextAreaHtml(newHtml) {
+    document.getElementById("lower_text_area").innerHTML = newHtml;
 }
+
+function updateUpperTextAreaHtml(newHtml) {
+    document.getElementById("upper_text_area").innerHTML = newHtml;
+}
+
 
 function firstSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide1Subtitle);
-    updateDescriptionHtml(slide1Description);
+    updateUpperTextAreaHtml(slide1UpperHtml);
+    updateLowerTextAreaHtml(slide1LowerHtml);
+    
     // Create scales for the x axis (year) & y axis (number of released movies)
     const xScale = d3.scaleBand()
          .domain(d3.range(minYear, maxYear+1))
@@ -227,7 +234,7 @@ function drawFirstSlideAnnotations() {
         { 'text': 'Netflix Subscribers', 'x': 450, 'y': 75 },
         { 'text': 'Exceed Combined Total', 'x': 430, 'y': 95 },
         { 'text': 'of Cable Subscribers', 'x': 435, 'y': 115 },
-        { 'text': 'Netflix Movie Data from 2009 through January 2020', 'x': 60, 'y': 40 }
+        { 'text': 'Netflix Movie Data from 2009 Through January 2020', 'x': 60, 'y': 40 }
     ];
     const lineConfigs = [
         { 'x1': 132, 'x2': 132, 'y1': 430, 'y2': 450 },
@@ -330,7 +337,8 @@ function buildMovieRatingLists(data) {
 function secondSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide2Subtitle);
-    updateDescriptionHtml(slide2Description);
+    updateUpperTextAreaHtml(slide2UpperHtml);
+    updateLowerTextAreaHtml(slide2LowerHtml);
 
     const noScatterPlotFunc = buildLineGraph;
     const scatterPlotFunc = (svgCanvas, xScale, rightYAxisScale, barMargin) => {
@@ -720,7 +728,9 @@ function thirdSlideBuilder() {
     resetGraphicsCanvas();
     initializeUnfiltedCategoryStackFilter();
     updateSubtitleText(slide3Subtitle);
-    updateDescriptionHtml(slide3Description);
+    updateUpperTextAreaHtml(slide3UpperHtml);
+    updateLowerTextAreaHtml(slide3LowerHtml);
+
     const toggleDiv = document.getElementById('interactive_components');
     const toggler = document.createElement('button');
     const togglerTexts = [
@@ -1015,7 +1025,8 @@ function buildIntroSlide() {
     const buttonDiv = document.getElementById('button_panel');
     const startButton = document.createElement('button');
     startButton.innerText = introButtonText;
-    updateDescriptionHtml(introSlideText);
+    updateLowerTextAreaHtml(introSlideText);
+    
     startButton.onclick = () => {
         buttonDiv.innerHTML = '';
         dynamicallyPopulateButtons();
@@ -1037,7 +1048,9 @@ function dynamicallyPopulateButtons() {
         // callback to highlight only the selected button at any given time.
         slideButton.onclick = () => {
             clearInteractiveComponents();
-            clearUpdateMenu();            
+            clearUpdateMenu();
+            updateLowerTextAreaHtml();
+            updateUpperTextAreaHtml();
             emphasizeButton(idx);
             slideInfo.populator();
         }
