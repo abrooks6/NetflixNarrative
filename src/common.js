@@ -191,9 +191,7 @@ function firstSlideBuilder() {
                     .style('border-style', 'solid')
                     .style('border-width', '1px')
                     .style('padding', '1px')
-                    .html(
-                        toolTipHtml
-                    )
+                    .html(toolTipHtml)
             })
             .on('mouseout', function(d) {
                 d3.select(this)
@@ -214,9 +212,59 @@ function firstSlideBuilder() {
     
     addDefaultSvgAxes(svgCanvas, 'Year added to Netflix', 'Number of Movies');
     addPlotTransition(plotCanvas, yScale);
-    // TODO: ADD ANNOTATIONS
-}
 
+    drawFirstSlideAnnotations();
+}
+function drawFirstSlideAnnotations() {
+    // Dynamically build first annotations. Note: html, left, and top refer
+    //  to text properties, all other properties refer to anchor lines.
+    const annotationConfigs = [
+        { 'text': 'Blockbuster Declares', 'x': 70, 'y': 405 },
+        { 'text': 'Bankruptcy', 'x': 96, 'y': 425 },
+        { 'text': 'Netflix Creates its First', 'x': 230, 'y': 405 },
+        { 'text': 'Original Content', 'x': 248, 'y': 425 },
+        { 'text': 'Netflix Subscribers', 'x': 450, 'y': 75 },
+        { 'text': 'Exceed Combined Total', 'x': 430, 'y': 95 },
+        { 'text': 'of Cable Subscribers', 'x': 435, 'y': 115 },
+        { 'text': 'Netflix Movie Data from 2009 through January 2020', 'x': 60, 'y': 40 }
+    ]
+    const lineConfigs = [
+        { 'x1': 132, 'x2': 132, 'y1': 430, 'y2': 450 },
+        { 'x1': 294, 'x2': 294, 'y1': 430, 'y2': 450 },
+        { 'x1': 510, 'x2': 510, 'y1': 120, 'y2': 450 }
+    ]
+    
+    const svgCanvas = d3.select('#svg_canvas');
+    svgCanvas.selectAll('plotviz')  
+        .data(annotationConfigs)
+        .enter()
+        .append('text')
+            .style('opacity', 0.8)
+            .style('pointer-events', 'none')
+            .attr('x', (d) => {return d.x;})
+            .attr('y', (d) => {return d.y;})
+            .attr('font-size', 15)
+            .attr('fill', 'black')
+            .attr('class', 'annotation')
+            .text((d) => {return d.text;});
+
+    svgCanvas.selectAll('plotviz')
+        .data(lineConfigs)
+        .enter()
+        .append('line')
+            .style('opacity', 0.8)
+            .style('pointer-events', 'none')
+            .attr('stroke', 'black')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5, 5')
+            .attr('class', 'annotation')
+            .attr('x1', (d) => {return d.x1;})
+            .attr('x2', (d) => {return d.x2;})
+            .attr('y1', (d) => {return d.y1;})
+            .attr('y2', (d) => {return d.y2;});
+
+
+}
 
 function addPlotTransition(plotCanvas, yScale) {
     plotCanvas.transition()
@@ -772,7 +820,7 @@ function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
 
     addPlotTransition(plotCanvas, yScale);
         
-    addDefaultSvgAxes(svgCanvas, 'Year added to Netflix', 'Number of Movies');
+    addDefaultSvgAxes(svgCanvas, 'Year Added to Netflix', 'Number of Movies');
 }
 
 function buildAlternateGraphThirdSlide() {
