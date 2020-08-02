@@ -1,3 +1,4 @@
+// Alex Brooks, 8/2/2020
 var loadedData = null;
 var years = null;
 var categories = null;
@@ -15,8 +16,7 @@ const slides = [
     { 'populator': firstSlideBuilder },
     { 'populator': secondSlideBuilder },
     { 'populator': thirdSlideBuilder }
-]
-
+];
 
 var maxCatCount = null;
 const svgWidth = 750;
@@ -34,14 +34,14 @@ const otherCategoryThreshold = .07;
 
 // Subtitles & Text
 var introSlideText = 
-'<h1>Netflix: Are the Movies Worth it?</h1>'
+'<h1>Netflix: Are the Movies Worth it?</h1><br>'
 + '<h2>Alexander Brooks - CS 498 [Data Visualization], 8/2/2020</h2>'
 + 'This narrative is an interactive slideshow focused on the quality of movies uploaded to the Netflix platform.'
 + ' Each slide focuses on a different desirable quality of a well-balanced streaming service.<br><br>'
 
 + 'We begin by examining how frequently new content is uploaded to Netflix.'
 + ' In order to retain customers, a streaming service must upload high-quality content frequently.'
-+ ' This is especially valuable if the content is exlusive to the platform.<br><br>'
++ ' This is especially valuable if the content is exclusive to the platform.<br><br>'
 
 + 'Next, we investigate the quality of the uploaded movies every year.'
 + ' This is accomplished by pairing the list of Netflix movies with IMDB ratings.<br><br>'
@@ -54,7 +54,7 @@ const slide1UpperHtml = 'Netflix has long been known for offering a wide variety
 + ' In order to stay ahead, streaming platforms must offer high-quality new content regularly.'
 
 const slide1LowerHtml =' From a quantity perspective, Netflix has done an excellent job of adding a high volume of movies and expanding its platform to over 190 countries.'
-+ ' It is important note that the data portrayed in the visualization below shows the movies uploaded to Netflix as of mid-January, 2020.'
++ ' It is important to note that the data portrayed in the visualization above shows the movies uploaded to Netflix as of mid-January, 2020.'
 + ' That is, the movie uploads have not slowed down - the provided dataset is just a bit stale.<br><br>'
 
 const slide2UpperHtml = 'Customers of streaming services often seem to complain that the platforms lack high quality content.'
@@ -65,7 +65,7 @@ const slide2UpperHtml = 'Customers of streaming services often seem to complain 
 const slide2LowerHtml = 'By inspecting the figure, we see that while the movie quality on Netflix is not spectacularly above average, it isn\'t as poor as some jaded users might expect.'
 + ' Digging into individual movie ratings using the graph above, we find that the platform has many renowned movies, such as <i>Pulp Fiction</i>, <i>The Matrix</i>, and <i>Inception.</i>'
 + ' There also seems to be consistent quality uploads throughout the years.'
-+ ' As such, we believe that the movie content uploaded to Netflix is high enough to warrant praise, even if many bad movies are uploaded every year.'
++ ' As such, we believe that the movie content uploaded to Netflix is good enough to warrant praise, even if many bad movies are uploaded every year.'
 
 const slide3UpperHtml = 'In the first slide, we saw some useful annotations focused on the growth of Netflix as a streaming platform.'
 + ' With such a large subscriber base one might rightfully expect that Netflix boasts a large selection for a wide variety of movie genres.'
@@ -78,7 +78,7 @@ const slide3LowerHtml = 'Interacting with the plot above reveals that Netflix al
 const introButtonText = 'Start the Slideshow!'
 const slide1Subtitle = 'How Often Does Netflix Add New Movies?'
 const slide2Subtitle = 'Is the Movie Quality on Netflix Consistent?'
-const slide3Subtitle = 'What Genres of Movies are on Netflix?'
+const slide3Subtitle = 'What Genres of Movies Are on Netflix?'
 
 // Slide 1 - interactive slide config and visualization
 /*
@@ -124,6 +124,7 @@ function buildYearList(data) {
     maxYearCount = Math.ceil(d3.max(years.map((d) => {return d.count}))/100.0) * 100;
 }
 
+// Functions for updating specific fields that we use a lot
 function updateSubtitleText(newText) {
     document.getElementById("sub_title").innerText = newText;
 }
@@ -136,7 +137,10 @@ function updateUpperTextAreaHtml(newHtml) {
     document.getElementById("upper_text_area").innerHTML = newHtml;
 }
 
-
+/* 
+ * Build the first slide in the interactive slideshow. Assumes that data has already been
+ * loaded. Note that this will always clear the SVG canvas.
+ */
 function firstSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide1Subtitle);
@@ -220,9 +224,13 @@ function firstSlideBuilder() {
     
     addDefaultSvgAxes(svgCanvas, 'Year added to Netflix', 'Number of Movies');
     addPlotTransition(plotCanvas, yScale);
-
     drawFirstSlideAnnotations();
 }
+
+/* 
+ * Draw the annotations onto the first slide. This is a bit disgusting, but we do this using lines
+ * and text objects since it plays nicer with D3/SVGs than HTML elements.
+ */
 function drawFirstSlideAnnotations() {
     // Dynamically build first annotations. Note: html, left, and top refer
     //  to text properties, all other properties refer to anchor lines.
@@ -244,6 +252,9 @@ function drawFirstSlideAnnotations() {
     plotAnnotations(annotationConfigs, lineConfigs);
 }
 
+/* 
+ * Helper for drawing the annotations onto the SVG canvas. Used for all slides.
+ */
 function plotAnnotations(annotationConfigs, lineConfigs) {
     const svgCanvas = d3.select('#svg_canvas');
     svgCanvas.selectAll('plotviz')  
@@ -275,7 +286,9 @@ function plotAnnotations(annotationConfigs, lineConfigs) {
             .attr('y2', (d) => {return d.y2;});
 }
 
-
+/* 
+ * Helper for adding fade in transitions to the primary bar graph used across many slides.
+ */
 function addPlotTransition(plotCanvas, yScale) {
     plotCanvas.transition()
         .attr('y', (d) => {
@@ -287,6 +300,9 @@ function addPlotTransition(plotCanvas, yScale) {
         .duration(750)
 }
 
+/* 
+ * Helper for setting the bottom and left axes for the primary bar graph used across many slides.
+ */
 function addDefaultSvgAxes(svgCanvas, xAxisText, yAxisText) {
     // X-axis label
     svgCanvas.append("text")
@@ -303,14 +319,18 @@ function addDefaultSvgAxes(svgCanvas, xAxisText, yAxisText) {
         .text(yAxisText);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// Ensure that all interactive buttons for drilling deeper are reset on slide changes
+/*
+ * Ensure that all interactive buttons for drilling deeper are reset on slide changes.
+ */
 function clearInteractiveComponents() {
     const toggleDiv = document.getElementById('interactive_components');
     toggleDiv.innerHTML = '';
 }
 
-// Compute the average movie by rating by year
+
+/*
+ * Preprocess the movie rating information to extract relevant information for the second slide.
+ */
 function buildMovieRatingLists(data) {
     runningYearCounts = {};
     data.forEach((d) => {
@@ -333,7 +353,9 @@ function buildMovieRatingLists(data) {
     });
 }
 
-// Slide 2 - Build something very similar to slide 1, but add a second axis and ratings line
+/*
+ * Build the second slide in the interactive slideshow.
+ */
 function secondSlideBuilder() {
     resetGraphicsCanvas();
     updateSubtitleText(slide2Subtitle);
@@ -375,6 +397,9 @@ function secondSlideBuilder() {
     }
 }
 
+/*
+ * Draw the annotations for the first part of the second slide of the slideshow.
+ */
 function drawInitialSecondSlideAnnotations() {
     const annotationConfigs = [
         { 'text': 'Average IMDB Rating', 'x': 200, 'y': 55 },
@@ -387,16 +412,22 @@ function drawInitialSecondSlideAnnotations() {
     plotAnnotations(annotationConfigs, lineConfigs);
 }
 
+/*
+ * Draw the annotations for the second part of the second slide of the slideshow.
+ */
 function drawScatteredSecondSlideAnnotations() {
     const annotationConfigs = [
         { 'text': 'Each Orange Point Represents a Movie!', 'x': 60, 'y': 35 },
-        { 'text': 'Hover over One to see Information About it.', 'x': 60, 'y': 55 },
+        { 'text': 'Hover Over One to See Information About it.', 'x': 60, 'y': 55 },
     ];
     const lineConfigs = [
     ]; 
     plotAnnotations(annotationConfigs, lineConfigs);
 }
 
+/*
+ * Build the default visualization for the second slideshow.
+ */
 function buildDefaultGraphSecondSlide(plotFunc) {
     resetGraphicsCanvas();
     // Create scales for the x axis (year) & y axis (number of released movies)
@@ -487,6 +518,9 @@ function buildDefaultGraphSecondSlide(plotFunc) {
     return svgCanvas;
 }
 
+/*
+ * Add the right axis (for IMDB ratings) to the slideshow.
+ */
 function addRightSvgAxis(svgCanvas, axisText) {
     svgCanvas.append("text")
         .attr("y", svgWidth - 12)
@@ -495,7 +529,9 @@ function addRightSvgAxis(svgCanvas, axisText) {
         .text(axisText);
 }
 
-// Average line graph
+/*
+ * Add the line graph to the second slide (showing average IMDB ratings over years).
+ */
 function buildLineGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
     // Now build the line graph showing the ratings - start with the circles
     svgCanvas.selectAll('plotviz')
@@ -525,14 +561,18 @@ function buildLineGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
         .style('pointer-events', 'none');
 }
 
+/*
+ * Helper function for hiding annotations - used for transient annotations that are tutorial-like.
+ */
 function hideAnnotations() {
     Object.values(document.getElementsByClassName("annotation")).forEach((elem) => {
         elem.style.display = "none"
     });
 }
 
-
-// Invidual movies - not just averages
+/*
+ * Add points for IMDB ratings for every movie. When a point is hovered over, it hides annotations.
+ */
 function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
     svgCanvas.selectAll('plotviz')
         .data(loadedData)
@@ -544,7 +584,6 @@ function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
             toolTipHtml += 'IMDB Rating: ' + d['IMDB Rating'] + '<br>'
             toolTipHtml += 'Number of votes on IMDB: ' + d['Vote Count'] +'<br>'
             toolTipHtml += 'Release Year: ' + d['Release Year'] +'<br>'
-            toolTipHtml += 'Number of votes on IMDB: ' + d['Vote Count'] +'<br>'
             toolTipHtml += 'Movie Category: ' + d['Category'] +'<br>'
             d3.select(this)
                 .style('opacity', 0.4)
@@ -578,35 +617,10 @@ function buildScatterMovieGraph(svgCanvas, xScale, rightYAxisScale, barMargin) {
         .attr('fill', 'orange');
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
+ * Many of the names of genres in the dataset are redundant because they end with "movie" / "movies".
+ * To make it easier to display them all on an axis, we remove these suffixes if that is the case.
+ */
 function suffixlessName(categoryName) {
     const lowerCat = categoryName.toLowerCase();
     const splitCat = lowerCat.split(' ');
@@ -625,6 +639,9 @@ function suffixlessName(categoryName) {
     }
 }
 
+/*
+ * Populate all genre information for later use.
+ */
 function buildCategoryList(data) {
     const categoryMap = {};
     categoryYearMap = {};
@@ -684,9 +701,11 @@ function buildCategoryList(data) {
     maxCatCount = Math.ceil(d3.max(categories.map((d) => {return d.count}))/100.0) * 100;
 }
 
-// In the interactive components section, build a hover & select drop down menu showing every
-// category. These are raw category values - there's no grouping into misc here. When a category
-// is selected, update the visualization's stack plot.
+/* 
+ * In the interactive components section, build a hover & select drop down menu showing every
+ * category. These are raw category values - there's no grouping into misc here. When a category
+ * is selected, update the visualization's stack plot.
+ */
 function initializeUnfiltedCategoryStackFilter() {
     const updateMenu = document.getElementById('updateMenu');
     const catButtons = [];
@@ -707,7 +726,17 @@ function initializeUnfiltedCategoryStackFilter() {
     });
 }
 
+/*
+ * Reset the update menu.
+ */
+function clearUpdateMenu() {
+    const updateMenu = document.getElementById('updateMenu');
+    updateMenu.innerHTML = '';
+}
 
+/*
+ * Emphasize a button in the update menu [slide 3].
+ */
 function emphasizeCatButtonAtIndex(catButtons, idx) {
     catButtons.forEach((c, i) => {
         if(i === idx) {
@@ -719,11 +748,9 @@ function emphasizeCatButtonAtIndex(catButtons, idx) {
     });
 }
 
-function clearUpdateMenu() {
-    const updateMenu = document.getElementById('updateMenu');
-    updateMenu.innerHTML = '';
-}
-
+/*
+ * Build the final slide in the presentation.
+ */
 function thirdSlideBuilder() {
     resetGraphicsCanvas();
     initializeUnfiltedCategoryStackFilter();
@@ -755,7 +782,9 @@ function thirdSlideBuilder() {
 
 }
 
-
+/*
+ * Draw the default annotations on the third slide.
+ */
 function drawInitialThirdSlideAnnotations() {
     const annotationConfigs = [
         { 'text': 'Select a Movie Category to See How Much of the Total Content It Makes Up', 'x': 60, 'y': 40 },
@@ -766,6 +795,9 @@ function drawInitialThirdSlideAnnotations() {
     plotAnnotations(annotationConfigs, lineConfigs);
 }
 
+/*
+ * Draw the alternate annotations on the third slide.
+ */
 function drawAlternateThirdSlideAnnotations() {
     const annotationConfigs = [
         { 'text': 'Less Popular Genres', 'x': 480, 'y': 40 },
@@ -779,8 +811,9 @@ function drawAlternateThirdSlideAnnotations() {
     plotAnnotations(annotationConfigs, lineConfigs);
 }
 
-
-// Slide 3 - interactive slide config and visualization
+/*
+ * Build the primary graph for the third slide.
+ */
 function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
     resetGraphicsCanvas();
     // Create scales for the x axis (year) & y axis (number of released movies)
@@ -818,11 +851,9 @@ function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
         .tickSize(-1 * (svgWidth - padAxisLeft - padAxisRight))
         .tickFormat(""))
 
-
-
-        const focusData = Object.keys(yearsFocusCategoryAdded).map((year) => {
-            return {'year': parseInt(year), 'count': yearsFocusCategoryAdded[year]}
-        });
+    const focusData = Object.keys(yearsFocusCategoryAdded).map((year) => {
+        return {'year': parseInt(year), 'count': yearsFocusCategoryAdded[year]}
+    });
 
     const plotCanvas = svgCanvas.selectAll('plotviz')
         .data(focusData)
@@ -883,10 +914,12 @@ function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
             .attr('opacity', .4)
 
     addPlotTransition(plotCanvas, yScale);
-        
     addDefaultSvgAxes(svgCanvas, 'Year Added to Netflix', 'Number of Movies');
 }
 
+/*
+ * Build the secondary graph for the third slide.
+ */
 function buildAlternateGraphThirdSlide() {
     resetGraphicsCanvas();
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
@@ -1004,9 +1037,9 @@ function buildAlternateGraphThirdSlide() {
         .duration(750);
 }
 
-
-
-// Common Slide Setup
+/*
+ * Load the data from Github & initialize the presentation.
+ */
 function configurePageInteractivity() {
     d3.json("https://raw.githubusercontent.com/abrooks6/NetflixNarrative/master/data/rated_netflix_movies.json")
     .then((data) => {
@@ -1020,7 +1053,10 @@ function configurePageInteractivity() {
         console.error(error);
     });
 }
-/* Build the intro slide - this is the first page the user will see. */
+
+/*
+ * Build the introduction slide.
+ */
 function buildIntroSlide() {
     const buttonDiv = document.getElementById('button_panel');
     const startButton = document.createElement('button');
@@ -1036,7 +1072,9 @@ function buildIntroSlide() {
     buttonDiv.append(startButton);
 }
 
-/* Build */
+/*
+ * Helper function to initialize the presentation after clicking through the intro slide.
+ */
 function dynamicallyPopulateButtons() {
     const buttonDiv = document.getElementById('button_panel');
     clearInteractiveComponents();
