@@ -739,7 +739,7 @@ function configurePageInteractivity() {
     })
     .catch((error) => {
         console.error(error);
-    });c
+    });
 }
 /* Build the intro slide - this is the first page the user will see. */
 function buildIntroSlide() {
