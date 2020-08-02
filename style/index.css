@@ -6,19 +6,30 @@
     margin: auto;
 }
 
-
 #svg_container {
     display: block;
     text-align: center;
     margin: auto; 
-
 }
 
 #svg_canvas {
-    display: block;
+    display: inline-block;
     text-align: center;   
     margin: auto; 
     color: black;
+}
+
+#updateMenu {
+    display: inline-block;
+    color: black;
+}
+
+#updateMenu button {
+    color: black;
+    display: block;
+    text-decoration: none;
+    padding: 4px;
+    min-width: 120px;
 }
 
 #button_panel {

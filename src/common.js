@@ -17,6 +17,8 @@ const slides = [
 var loadedData = null;
 var years = null;
 var categories = null;
+var unfilteredCategories = null;
+var categoryYearMap = null;
 var miscCategories = null;
 var averageMovieRatingsByYear = null;
 var runningYearCounts = null;
@@ -26,8 +28,6 @@ var maxYear = null;
 var maxYearCount = null;
 
 var maxCatCount = null;
-
-
 const svgWidth = 750;
 const svgHeight = 500;
 const halfBarMarginPercent = .05;
@@ -503,14 +503,15 @@ function suffixlessName(categoryName) {
         var titleCased = allExceptLast.map(toTitleCase);
         return titleCased.join(' ');
     } else if (splitAtAmpersandCat.length > 1){
-        return toTitleCase(splitAtAmpersandCat[0]);
+        return toTitleCase(splitAtAmpersandCat[0].trim());
     } else {
         return categoryName;
     }
 }
 
 function buildCategoryList(data) {
-    const categoryMap = {}
+    const categoryMap = {};
+    categoryYearMap = {};
     data.forEach((d) => {
         d['Category'].split(',').forEach((unstrippedSubcategory) => {
             var subcategory = suffixlessName(unstrippedSubcategory.trim());
@@ -521,6 +522,9 @@ function buildCategoryList(data) {
             }
         });
     });
+    // Maintain one list of all category objects - too many to display well at once here
+    unfilteredCategories = [];
+    // ...And another where categories are condensed
     categories = [{'category': 'Misc', 'count': 0}];
     miscCategories = [];
     Object.keys(categoryMap).forEach((category) => {
@@ -531,6 +535,7 @@ function buildCategoryList(data) {
     });
     // Finally, merge categories that are below the threshold. Otherwise, keep them.
     Object.keys(categoryMap).forEach((category) => {
+        unfilteredCategories.push({'category': category, 'count': categoryMap[category]});
         // Only keep values over a small threshold, since the data has some mistakes
         if(categoryMap[category] > otherCategoryThreshold * data.length) {
             categories.push({'category': category, 'count': categoryMap[category]});
@@ -540,49 +545,74 @@ function buildCategoryList(data) {
             miscCategories.push({'category': category, 'count': categoryMap[category]});
         }
     });
+
+    // Now let's also populate a category -> year population map
+    unfilteredCategories.map((ucat) => {return ucat.category}).forEach((category) => {
+        categoryYearMap[category] = {}
+    });
+    data.forEach((d) => {
+        var currentYear = d['Year Added']
+        d['Category'].split(',').forEach((unstrippedSubcategory) => {
+            var subcategory = suffixlessName(unstrippedSubcategory.trim());
+            try {
+                if(currentYear in categoryYearMap[subcategory]) {
+                    categoryYearMap[subcategory][currentYear] += 1;
+                } else {
+                    categoryYearMap[subcategory][currentYear] = 1;
+                }
+            } catch(err) {}
+        });
+    });
+    unfilteredCategories = unfilteredCategories.sort((a, b) => (a.count > b.count) ? -1 : 1);
     categories = categories.sort((a, b) => (a.count > b.count) ? 1 : -1);
     maxCatCount = Math.ceil(d3.max(categories.map((d) => {return d.count}))/100.0) * 100;
 }
 
+// In the interactive components section, build a hover & select drop down menu showing every
+// category. These are raw category values - there's no grouping into misc here. When a category
+// is selected, update the visualization's stack plot.
+function initializeUnfiltedCategoryStackFilter() {
+    const updateMenu = document.getElementById('updateMenu');
+    const catButtons = [];
+    updateMenu.innerText = 'Movie type';
+    // Create a button that has an onhover event to show an invisble 
+    unfilteredCategories.forEach((cat) => {
+        var catButton = document.createElement('button');
+        catButtons.push(catButton);
+        catButton.innerText = cat.category;
+        updateMenu.append(catButton)        
+    });
+    catButtons.forEach((catButton, idx) => {
+        catButton.onclick = () => emphasizeCatButtonAtIndex(catButtons, idx);
+        if(idx === 0) {
+            catButton.onclick();
+            catButton.className = 'selectedButton';
+        }
+    });
+}
 
 
+function emphasizeCatButtonAtIndex(catButtons, idx) {
+    catButtons.forEach((c, i) => {
+        if(i === idx) {
+            catButtons[i].className = 'selectedButton';
+            buildDefaultGraphThirdSlide(unfilteredCategories[i].category, categoryYearMap[unfilteredCategories[i].category]);
+        } else {
+            catButtons[i].className = '';
+        }
+    });
+}
 
+function clearUpdateMenu() {
+    const updateMenu = document.getElementById('updateMenu');
+    updateMenu.innerHTML = '';
+}
 
-
-
-
-
-
-// const svgCanvas = buildDefaultGraphSecondSlide(noScatterPlotFunc);
-// addRightSvgAxis(svgCanvas, 'Average IMDB Movie Rating');
-// const toggleDiv = document.getElementById('interactive_components');
-// const toggler = document.createElement('button');
-// const togglerTexts = [
-//     'Show individual movie ratings',
-//     'Show average movie ratings only'
-// ]
-// // By default, build something graph from part 1 with an extra axis and different tooltips
-// // If the toggle button is selected, expand the graph to show individual movies, grouped by
-// // year and ratings.
-// toggler.innerText = togglerTexts[0];
-// toggleDiv.append(toggler);
-// toggler.onclick = () => {
-//     if(toggler.innerText === togglerTexts[0]){
-//         toggler.innerText = togglerTexts[1];
-//         buildDefaultGraphSecondSlide(scatterPlotFunc);
-//         addRightSvgAxis(svgCanvas, 'IMDB Movie Rating');
-//     } else {
-//         toggler.innerText = togglerTexts[0];
-//         buildDefaultGraphSecondSlide(noScatterPlotFunc);
-//         addRightSvgAxis(svgCanvas, 'Average IMDB Movie Rating');
-//     }
-// }
 function thirdSlideBuilder() {
     resetGraphicsCanvas();
+    initializeUnfiltedCategoryStackFilter();
     updateSubtitleText(slide3Subtitle);
     updateDescriptionText(slide3Description);
-    buildDefaultGraphThirdSlide();
-
     const toggleDiv = document.getElementById('interactive_components');
     const toggler = document.createElement('button');
     const togglerTexts = [
@@ -594,11 +624,12 @@ function thirdSlideBuilder() {
     toggleDiv.append(toggler);
     toggler.onclick = () => {
         if(toggler.innerText === togglerTexts[0]){
+            clearUpdateMenu();
             toggler.innerText = togglerTexts[1];
-            buildDefaultGraphSecondSlide((x, y, z, q) => {});
+            buildAlternateGraphThirdSlide();
         } else {
+            initializeUnfiltedCategoryStackFilter();
             toggler.innerText = togglerTexts[0];
-            buildDefaultGraphThirdSlide();
         }
     }
 
@@ -608,7 +639,108 @@ function thirdSlideBuilder() {
 
 
 // Slide 3 - interactive slide config and visualization
-function buildDefaultGraphThirdSlide() {
+function buildDefaultGraphThirdSlide(focusCategory, yearsFocusCategoryAdded) {
+    resetGraphicsCanvas();
+    // Create scales for the x axis (year) & y axis (number of released movies)
+    const xScale = d3.scaleBand()
+         .domain(d3.range(minYear, maxYear+1))
+         .range([padAxisLeft, svgWidth - padAxisRight]);
+    const yScale = d3.scaleLinear()
+        .domain([0, maxYearCount])
+        .range([padAxisTop, svgHeight - padAxisBottom]);
+    const barMargin = halfBarMarginPercent * xScale.bandwidth();
+    
+    // Populate the cleared svg with bar graph
+    const svgCanvas = d3.select('#svg_canvas')
+        .attr('height', svgHeight)
+        .attr('width', svgWidth)
+
+    const xAxisScale = d3.scaleBand()
+        .domain(d3.range(minYear, maxYear+1))
+        .range([padAxisLeft, svgWidth - padAxisRight]);
+    const yAxisTranslate = svgHeight - padAxisTop;
+    svgCanvas.append('g')
+        .attr('transform', 'translate(0,'+yAxisTranslate+')')
+        .call(d3.axisBottom(xAxisScale));
+
+    const yAxisScale = d3.scaleLinear()
+        .domain([0, maxYearCount])
+        .range([svgHeight - padAxisTop, padAxisBottom]);
+    svgCanvas.append('g')
+        .attr('transform', 'translate('+padAxisLeft+', 0)')
+        .call(d3.axisLeft(yAxisScale))
+    svgCanvas.append('g')
+        .attr("class", "gridline")
+        .attr('transform', 'translate('+padAxisLeft+', 0)')
+        .call(d3.axisLeft(yAxisScale)
+        .tickSize(-1 * (svgWidth - padAxisLeft - padAxisRight))
+        .tickFormat(""))
+
+
+
+        const focusData = Object.keys(yearsFocusCategoryAdded).map((year) => {
+            return {'year': parseInt(year), 'count': yearsFocusCategoryAdded[year]}
+        });
+
+    const plotCanvas = svgCanvas.selectAll('plotviz')
+        .data(focusData)
+        .enter()
+        .append('rect')
+        .attr('x', (d) => {return xScale(d.year);})
+        .attr('y', (d) => {return svgHeight - padAxisTop;})
+        .attr('width', () => {
+            return xScale.bandwidth() - barMargin;
+        })
+        .attr('height', (d) => {
+            return 0;
+        })
+        .attr('fill', '#587291')
+        .attr('stroke', '#587291')
+        .attr('opacity', 1)
+
+    svgCanvas.selectAll('plotviz')
+        .data(years)
+        .enter()
+        .append('rect')
+            .on('mouseover', function(d, i) {
+                var toolTipHtml = 'Number of Movies Uploaded in ' + d.year + ': ' + d.count + '<br>'
+                toolTipHtml += 'Number of Uploaded ' + focusCategory + ' Movies: ' + focusData[i].count;
+                d3.select('#tooltip')
+                    .style('opacity', 1)
+                    .style('left',(d3.event.pageX+5)+'px')
+                    .style('top',(d3.event.pageY+5)+'px')
+                    .style('position', 'absolute')
+                    .style('text-align', 'center')
+                    .style('background', 'white')
+                    .style('border-style', 'solid')
+                    .style('border-width', '1px')
+                    .style('padding', '1px')
+                    .html(
+                        toolTipHtml
+                    )
+            })
+            .on('mouseout', function(d) {
+                d3.select('#tooltip')
+                    .style("opacity", 0)
+            })
+            .attr('x', (d) => {return xScale(d.year);})
+            .attr('y', (d) => {return svgHeight - yScale(d.count);})
+            .attr('width', () => {
+                return xScale.bandwidth() - barMargin;
+            })
+            .attr('height', (d) => {
+                return yScale(d.count) - padAxisTop;
+            })
+            .attr('fill', '#587291')
+            .attr('stroke', '#587291')
+            .attr('opacity', .4)
+
+    addPlotTransition(plotCanvas, yScale);
+        
+    addDefaultSvgAxes(svgCanvas, 'Year added to Netflix', 'Number of Movies');
+}
+
+function buildAlternateGraphThirdSlide() {
     resetGraphicsCanvas();
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
         .domain(categories.map((d) => {return d.category}));
@@ -712,10 +844,7 @@ function buildDefaultGraphThirdSlide() {
             .attr("fill", (d) => {
                 return colorScale(d.category);
             })
-
- 
     addDefaultSvgAxes(svgCanvas, 'Netflix Movie Categories', 'Number of Movies Offered');
-
     plotCanvas.transition()
         .attr('y', (d) => {
             return svgHeight - yScale(d.count);
@@ -723,9 +852,10 @@ function buildDefaultGraphThirdSlide() {
         .attr('height', (d) => {
             return yScale(d.count) - padAxisTop;
         })
-        .duration(750)            
-
+        .duration(750);
 }
+
+
 
 // Common Slide Setup
 function configurePageInteractivity() {
@@ -768,6 +898,7 @@ function dynamicallyPopulateButtons() {
         // callback to highlight only the selected button at any given time.
         slideButton.onclick = () => {
             clearInteractiveComponents();
+            clearUpdateMenu();            
             emphasizeButton(idx);
             slideInfo.populator();
         }
