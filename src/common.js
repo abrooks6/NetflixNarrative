@@ -42,6 +42,8 @@ const genreThresh = 5;
 const otherCategoryThreshold = .07;
 
 // Subtitles & Text
+const introSlideText = 'This is the text on the intro slide.';
+const introButtonText = 'Let\'s Find Out!'
 const slide1Subtitle = 'How Often Does Netflix Add New Movies?'
 const slide2Subtitle = 'Is the Movie Quality on Netflix Consistent?'
 const slide3Subtitle = 'What Genres of Movies are on Netflix?'
@@ -725,10 +727,6 @@ function buildDefaultGraphThirdSlide() {
 
 }
 
-
-
-
-
 // Common Slide Setup
 function configurePageInteractivity() {
     d3.json("https://raw.githubusercontent.com/abrooks6/NetflixNarrative/master/data/rated_netflix_movies.json")
@@ -737,16 +735,31 @@ function configurePageInteractivity() {
         buildYearList(data);
         buildCategoryList(data);
         buildMovieRatingLists(data);
-        dynamicallyPopulateButtons();
+        buildIntroSlide();        
     })
     .catch((error) => {
         console.error(error);
-    });
+    });c
+}
+/* Build the intro slide - this is the first page the user will see. */
+function buildIntroSlide() {
+    const buttonDiv = document.getElementById('button_panel');
+    const startButton = document.createElement('button');
+    startButton.innerText = introButtonText;
+    updateDescriptionText(introSlideText);
+    startButton.onclick = () => {
+        buttonDiv.innerHTML = '';
+        dynamicallyPopulateButtons();
+        slides[0].populator();
+        slides[0].button.className = 'selectedButton';
+    }
+    buttonDiv.append(startButton);
 }
 
+/* Build */
 function dynamicallyPopulateButtons() {
-    console.log('    Starting to populate buttons based on slidecontent');
     const buttonDiv = document.getElementById('button_panel');
+    clearInteractiveComponents();
     slides.forEach((slideInfo, idx) => {
         var slideButton = document.createElement("button");
         slideButton.innerText = (idx + 1).toString();
@@ -761,10 +774,7 @@ function dynamicallyPopulateButtons() {
         buttonDiv.append(slideButton);
         // Add the button to the slide info so that we can highlight as needed
         slideInfo.button = slideButton;
-    })
-    // Set the first slide as the "default slide"
-    slides[0].populator()
-    slides[0].button.className = 'selectedButton';
+    });
 }
 
 window.onload = configurePageInteractivity;
