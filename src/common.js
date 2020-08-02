@@ -1,19 +1,3 @@
-
-const slides = [
-    {
-        'title': 'This is the first slide',
-        'populator': firstSlideBuilder
-    },
-    {
-        'title': 'This is the second slide',
-        'populator': secondSlideBuilder
-    },
-    {
-        'title': 'This is the second slide',
-        'populator': thirdSlideBuilder
-    }   
-]
-
 var loadedData = null;
 var years = null;
 var categories = null;
@@ -26,6 +10,13 @@ var runningYearCounts = null;
 var minYear = null;
 var maxYear = null;
 var maxYearCount = null;
+
+const slides = [
+    { 'populator': firstSlideBuilder },
+    { 'populator': secondSlideBuilder },
+    { 'populator': thirdSlideBuilder }
+]
+
 
 var maxCatCount = null;
 const svgWidth = 750;
@@ -42,14 +33,43 @@ const genreThresh = 5;
 const otherCategoryThreshold = .07;
 
 // Subtitles & Text
-const introSlideText = 'This is the text on the intro slide.';
-const introButtonText = 'Let\'s Find Out!'
+var introSlideText = 'This narrative is an interactive slideshow focused on the quality of movies uploaded to the Netflix platform.'
++ ' Each slide focuses on a different desirable quality of a well-balanced streaming service.'
+
++ ' We begin by examining how frequently new content is uploaded to Netflix.'
++ ' In order to retain customers, a streaming service must upload high-quality content frequently.'
++ ' This is especially valuable if the content is exlusive to the platform.'
+
++ ' Next, we investigate the quality of the uploaded movies every year.'
++ ' This is accomplished by pairing the list of Netflix movies with IMDB ratings.'
+
++ ' Lastly, we dig into the diversity of the content uploaded to Netflix.'
++ ' We show a breakdown of the most prevalent movie genres on the platform and illustrate how frequently new content is uploaded per genre.'
+
+var slide1Description = 'Netflix has long been known for offering a wide variety of movies on their streaming service.'
++ ' In recent years, many companies like Disney, Amazon, and Hulu have entered the streaming space as competitors.'
++ ' In order to stay ahead, streaming platforms must offer high-quality new content regularly.'
++ ' From a quantity perspective, Netflix has done an excellent job of adding a high volume of movies and expanding its platform to over 190 countries.'
++ ' It is important note that the data portrayed in the visualization below shows the movies uploaded to Netflix as of mid-January, 2020.'
++ ' That is, the movie uploads have not slowed down - the provided dataset is just a bit stale.'
+
+
+
+const slide2Description = 'Customers of streaming services often seem to complain that the platforms lack high quality content.'
++ ' The figure above illustrates the IMDB ratings of movies uploaded to the platform over the years.'
++ ' The quality of the content seems to have stabilized over the last several years, which appears to be somewhat close to the expected average IMDB movie rating, based on a 2009 study.'
++ ' In this way, we see that while the movie quality on Netflix is not spectacularly above average, it isn\'t as poor as some jaded users might expect.'
+
+const slide3Description = 'In the first slide, we saw some useful annotations focused on the growth of Netflix as a streaming platform.'
++ ' With such a large subscriber base one might rightfully expect that Netflix boasts a large selection for a wide variety of movie genres.'
++ ' However, it may come as a surprise that the category with the largest selection on the Netflix platform is Internation films.'
++ ' In fact, the majority of Netflix subscribers live are not from the United States.'
+
+
+const introButtonText = 'Start the Slideshow!'
 const slide1Subtitle = 'How Often Does Netflix Add New Movies?'
 const slide2Subtitle = 'Is the Movie Quality on Netflix Consistent?'
 const slide3Subtitle = 'What Genres of Movies are on Netflix?'
-const slide1Description = 'Netflix has long been known for offering a wide variety of movies on their streaming service. In recent years, many companies like Disney, Amazon, and Hulu have entered the streaming space as competitors. In order to stay ahead, streaming platforms must offer high-quality new content regularly. From a quantity perspective, Netflix has done an excellent job of adding a high volume of movies and expanding its platform to over 190 countries. It is important note that the data portrayed in the visualization below shows the movies uploaded to Netflix as of mid-January, 2020.'
-const slide2Description = 'Maybe!'
-const slide3Description = 'Netflix has an extremely diverse selection. [EXPLAIN MORE]'
 
 // Slide 1 - interactive slide config and visualization
 /*
@@ -368,19 +388,19 @@ function buildDefaultGraphSecondSlide(plotFunc) {
                     .style("opacity", 0)
             })
             .attr('x', (d) => {return xScale(d.year);})
-            .attr('y', (d) => {return svgHeight - padAxisTop;})
+            .attr('y', (d) => {return svgHeight - leftYScale(d.count);})
             .attr('width', () => {
                 return xScale.bandwidth() - barMargin;
             })
             .attr('height', (d) => {
-                return 0;
+                return leftYScale(d.count) - padAxisTop;
             })
             .attr("fill", "#589991")
 
     plotFunc(svgCanvas, xScale, rightYAxisScale, barMargin);
     addDefaultSvgAxes(svgCanvas, 'Year Added to Netflix', 'Number of Movies');
-    addPlotTransition(plotCanvas, leftYScale);
     return svgCanvas;
+
 }
 
 function addRightSvgAxis(svgCanvas, axisText) {
