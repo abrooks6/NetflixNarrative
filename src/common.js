@@ -709,7 +709,7 @@ function buildCategoryList(data) {
 function initializeUnfiltedCategoryStackFilter() {
     const updateMenu = document.getElementById('updateMenu');
     const catButtons = [];
-    updateMenu.innerText = 'Movie type';
+    updateMenu.innerText = 'Movie Type';
     // Create a button that has an onhover event to show an invisble 
     unfilteredCategories.forEach((cat) => {
         var catButton = document.createElement('button');
