@@ -222,7 +222,7 @@ function firstSlideBuilder() {
             })
             .attr("fill", "#587291")
     
-    addDefaultSvgAxes(svgCanvas, 'Year added to Netflix', 'Number of Movies');
+    addDefaultSvgAxes(svgCanvas, 'Year Added to Netflix', 'Number of Movies');
     addPlotTransition(plotCanvas, yScale);
     drawFirstSlideAnnotations();
 }
